@@ -4,15 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>US Foods Competitive Intelligence Dashboard</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-
-<link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="android-chrome-512x512.png">
     <style>
         :root {
             --primary-green: #5C8727;
@@ -84,8 +75,6 @@
             font-size: 16px;
             opacity: 0.95;
         }
-</parameter>
-</invoke>
 
         .timestamp {
             font-size: 12px;
@@ -98,9 +87,19 @@
             gap: 8px;
             margin-bottom: 30px;
             border-bottom: 2px solid var(--border);
-            overflow-x: auto;
+            overflow-x: auto; /* Enable scrolling for tabs on mobile */
             background: var(--background);
             padding: 0 0 0 0;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        }
+        
+        /* Hide scrollbar for tabs but keep functionality */
+        .tabs::-webkit-scrollbar {
+            height: 4px;
+        }
+        .tabs::-webkit-scrollbar-thumb {
+            background: var(--secondary-light);
+            border-radius: 2px;
         }
 
         .tab-btn {
@@ -114,6 +113,7 @@
             border-bottom: 3px solid transparent;
             transition: all 0.3s ease;
             white-space: nowrap;
+            flex-shrink: 0; /* Prevent buttons from shrinking */
         }
 
         .tab-btn:hover {
@@ -127,6 +127,12 @@
 
         .tab-content {
             display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .tab-content.active {
@@ -140,6 +146,14 @@
             margin-bottom: 30px;
         }
 
+        /* Specialized grid for 3-column layouts that should stack on mobile */
+        .grid-3-col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
         .card {
             background: var(--background);
             border: 1px solid var(--border);
@@ -147,6 +161,7 @@
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
+            height: 100%; /* Ensure cards match height in grid */
         }
 
         .card:hover {
@@ -190,34 +205,26 @@
             margin: 2px;
         }
 
-        .badge-success {
-            background: rgba(92, 135, 39, 0.1);
-            color: var(--primary-green);
-        }
+        .badge-success { background: rgba(92, 135, 39, 0.1); color: var(--primary-green); }
+        .badge-warning { background: rgba(207, 69, 32, 0.1); color: var(--primary-orange); }
+        .badge-danger { background: rgba(193, 18, 31, 0.1); color: var(--danger); }
+        .badge-neutral { background: rgba(113, 112, 115, 0.1); color: var(--secondary); }
 
-        .badge-warning {
-            background: rgba(207, 69, 32, 0.1);
-            color: var(--primary-orange);
-        }
-
-        .badge-danger {
-            background: rgba(193, 18, 31, 0.1);
-            color: var(--danger);
-        }
-
-        .badge-neutral {
-            background: rgba(113, 112, 115, 0.1);
-            color: var(--secondary);
+        /* Responsive Table Container */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .comparison-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
             background: var(--background);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            min-width: 600px; /* Ensure table doesn't squish too much */
         }
 
         .comparison-table th {
@@ -228,6 +235,7 @@
             font-size: 13px;
             color: var(--text);
             border-bottom: 2px solid var(--border);
+            white-space: nowrap; /* Prevent headers from breaking awkwardly */
         }
 
         .comparison-table td {
@@ -239,22 +247,10 @@
             border-bottom: none;
         }
 
-        .company-col {
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .sysco {
-            color: var(--sysco);
-        }
-
-        .usfoods {
-            color: var(--primary-green);
-        }
-
-        .pfg {
-            color: var(--pfg);
-        }
+        .company-col { font-weight: 600; color: var(--text); }
+        .sysco { color: var(--sysco); }
+        .usfoods { color: var(--primary-green); }
+        .pfg { color: var(--pfg); }
 
         .sentiment-bar {
             width: 100%;
@@ -265,23 +261,9 @@
             margin: 8px 0;
         }
 
-        .sentiment-positive {
-            height: 100%;
-            background: var(--primary-green);
-            transition: width 0.3s ease;
-        }
-
-        .sentiment-neutral {
-            height: 100%;
-            background: var(--primary-orange);
-            transition: width 0.3s ease;
-        }
-
-        .sentiment-negative {
-            height: 100%;
-            background: var(--danger);
-            transition: width 0.3s ease;
-        }
+        .sentiment-positive { height: 100%; background: var(--primary-green); transition: width 0.3s ease; }
+        .sentiment-neutral { height: 100%; background: var(--primary-orange); transition: width 0.3s ease; }
+        .sentiment-negative { height: 100%; background: var(--danger); transition: width 0.3s ease; }
 
         .quote {
             background: var(--bg-subtle);
@@ -382,23 +364,9 @@
             background: var(--background);
         }
 
-        .score-high {
-            background: rgba(92, 135, 39, 0.1);
-            color: var(--primary-green);
-            font-weight: 600;
-        }
-
-        .score-medium {
-            background: rgba(207, 69, 32, 0.1);
-            color: var(--primary-orange);
-            font-weight: 600;
-        }
-
-        .score-low {
-            background: rgba(193, 18, 31, 0.1);
-            color: var(--danger);
-            font-weight: 600;
-        }
+        .score-high { background: rgba(92, 135, 39, 0.1); color: var(--primary-green); font-weight: 600; }
+        .score-medium { background: rgba(207, 69, 32, 0.1); color: var(--primary-orange); font-weight: 600; }
+        .score-low { background: rgba(193, 18, 31, 0.1); color: var(--danger); font-weight: 600; }
 
         .recommendation {
             background: linear-gradient(135deg, rgba(92, 135, 39, 0.08) 0%, rgba(92, 135, 39, 0.03) 100%);
@@ -468,33 +436,75 @@
             margin: 30px 0;
         }
 
-        .us-foods-logo {
-            display: inline-block;
-            font-weight: 700;
-            font-size: 18px;
-            color: var(--primary-green);
-            margin-right: 8px;
-        }
+        /* --- RESPONSIVE MEDIA QUERIES --- */
+        @media (max-width: 992px) {
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+            
+            .header-text h1 {
+                font-size: 26px;
+            }
 
-        .accent-orange {
-            color: var(--primary-orange);
+            .grid-3-col {
+                grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
+            }
+            
+            .matrix-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 768px) {
-            .header h1 {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 24px 16px;
+            }
+
+            .header-top {
+                gap: 16px;
+            }
+
+            .logo-wrapper svg {
+                height: 48px;
+            }
+            
+            .header-text h1 {
                 font-size: 24px;
+            }
+            
+            .header-text p {
+                font-size: 14px;
             }
 
             .grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr; /* Stack cards vertically */
+            }
+
+            .grid-3-col {
+                grid-template-columns: 1fr; /* Stack columns vertically */
             }
 
             .matrix-grid {
                 grid-template-columns: 1fr;
             }
-
+            
+            .comparison-table th, .comparison-table td {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+            
             .tabs {
-                overflow-x: scroll;
+                padding-bottom: 4px; /* Space for scrollbar */
+            }
+            
+            .metric {
+                font-size: 24px;
             }
         }
     </style>
@@ -513,7 +523,7 @@
                       <path class="cls-1" d="M50.3,70.43c-.32,0-.76,0-.99-.06v-11.17c.23-.05.7-.11,1.44-.11,2.83,0,4.9,1.72,4.9,5.37,0,4.21-2.28,6.02-5.34,5.96h0ZM36.43,70.43h-.05c-2.28,0-3.69-2.33-3.67-5.68,0-3.25,1.39-5.69,3.67-5.69s3.66,2.44,3.66,5.66c0,3.38-1.34,5.71-3.61,5.71h0ZM20.32,70.43h-.05c-2.28,0-3.69-2.33-3.66-5.68,0-3.25,1.39-5.69,3.66-5.69s3.67,2.44,3.67,5.66c0,3.38-1.34,5.71-3.61,5.71h0ZM67.11,62.77c-2.23-.88-3.17-1.24-3.17-2.19,0-.83.79-1.39,2.23-1.39,1.75,0,3.06.52,3.82.89l1-4.02c-1.15-.53-2.67-.94-4.76-.94-3.63,0-6.06,1.7-6.83,4.11-.52-.86-1.17-1.56-1.94-2.12-1.73-1.27-3.87-1.85-7.25-1.85-2.09,0-4.11.14-5.63.41v5.49c-1.03-3.46-3.73-6.07-8.08-6.07-4.02,0-6.89,2.38-8.12,5.81-1.09-3.33-3.77-5.81-8-5.81-4.77,0-7.93,3.34-8.63,7.85h-5.95v-3.44h6.6v-4.11H1.06v18.69h4.74v-7.1h5.99c.72,4.19,3.6,7.4,8.3,7.4h.03c4.06,0,6.99-2.15,8.2-5.75,1.13,3.35,3.83,5.75,7.89,5.75h.03c4.23,0,7.23-2.34,8.34-6.23v5.81c.91.17,2.44.34,4.71.34,3.46,0,6.36-.69,8.3-2.31,1.67-1.38,3-3.77,3.06-7.46.86.85,2.05,1.52,3.46,2.06,1.99.72,2.77,1.22,2.77,2.13s-.78,1.53-2.41,1.53c-.96,0-1.9-.17-2.74-.42-.64,1.41-1.52,2.53-2.53,3.36-.03.03-.07.05-.1.08,1.03.54,3.03,1.08,5.08,1.08,5.16,0,7.51-2.74,7.51-5.96,0-2.61-1.41-4.38-4.58-5.63h0Z"/>
                       <path class="cls-1" d="M74.82,52.16c-3.28,0-5.08-2.5-5.08-5.47s2.01-5.6,5.25-5.6c3.41,0,5.13,2.56,5.13,5.42,0,3.45-2.04,5.65-5.29,5.65h-.02Z"/>
                       <path class="cls-1" d="M58.22,20.82c-5.92-2.41-7.76-3.46-7.76-6.01,0-2.26,2.09-3.76,5.92-3.76,4.73,0,8.21,1.5,10.23,2.41l2.64-10.82c-3.13-1.5-7.1-2.63-12.74-2.63-7.79,0-13.5,3-16.49,7.6V.82h-12.6v28.79c0,8.04-2.44,11.95-7.45,11.95s-7.45-4.36-7.45-12.03V.82H0v27.66c0,16.23,6.75,23.82,19.63,23.82s20.39-7.89,20.39-23.52v-4.79c2.12,3.12,5.6,5.45,10.19,7.19,5.29,1.96,7.38,3.38,7.38,5.79,0,2.55-2.03,4.13-6.34,4.13-2.25,0-4.94-.44-7.49-1.18-.57,2.11-1.33,4.09-2.3,5.92-.88,1.67-1.95,3.18-3.17,4.53,4.13,1.31,8.77,1.94,12.24,1.94,13.71,0,19.94-7.52,19.94-16.24,0-7.06-3.83-11.87-12.25-15.25h0Z"/>
-                      <path class="cls-1" d="M72.89,57.29h.09c.14,0,.21-.06.21-.14,0-.1-.08-.13-.19-.13-.04,0-.08,0-.11,0v.27h0ZM72.87,57.99h-.43v-1.23c.08,0,.31-.05.58-.05.31,0,.43.04.53.1.08.06.13.15.13.27s-.12.24-.3.28v.02c.15.05.23.15.27.32.04.18.07.25.09.29h-.48s-.06-.15-.09-.24c-.02-.12-.08-.17-.19-.17h-.11v.42h0ZM73.01,56.36c-.55,0-.97.45-.97,1.01s.42,1.01.98,1.01c.57,0,.98-.45.98-1.02s-.42-1.01-.98-1.01h0ZM73.04,55.99c.79,0,1.42.62,1.42,1.38s-.63,1.39-1.42,1.39-1.44-.62-1.44-1.39.64-1.38,1.44-1.38h0Z"/>
+                      <path class="cls-1" d="M72.89,57.29h.09c.14,0,.21-.06.21-.14,0-.1-.08-.13-.19-.13-.04,0-.08,0-.11,0v.27h0ZM72.87,57.99h-.43v-1.23c.08,0,.31-.05.58-.05.31,0,.43.1.53.1.08.06.13.15.13.27s-.12.24-.3.28v.02c.15.05.23.15.27.32.04.18.07.25.09.29h-.48s-.06-.15-.09-.24c-.02-.12-.08-.17-.19-.17h-.11v.42h0ZM73.01,56.36c-.55,0-.97.45-.97,1.01s.42,1.01.98,1.01c.57,0,.98-.45.98-1.02s-.42-1.01-.98-1.01h0ZM73.04,55.99c.79,0,1.42.62,1.42,1.38s-.63,1.39-1.42,1.39-1.44-.62-1.44-1.39.64-1.38,1.44-1.38h0Z"/>
                     </svg>
                 </div>
                 <div class="header-text">
@@ -523,8 +533,6 @@
                 </div>
             </div>
         </div>
-</parameter>
-</invoke>
 
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('overview')">📊 Overview</button>
@@ -535,7 +543,6 @@
             <button class="tab-btn" onclick="switchTab('opportunities')">🚀 Opportunities</button>
         </div>
 
-        <!-- TAB 1: OVERVIEW -->
         <div id="overview" class="tab-content active">
             <div class="grid">
                 <div class="card">
@@ -560,53 +567,55 @@
 
             <div class="card">
                 <h3>📈 Key Financial Snapshot</h3>
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Metric</th>
-                            <th class="sysco">Sysco</th>
-                            <th class="usfoods">US Foods</th>
-                            <th class="pfg">PFG</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Annual Revenue</strong></td>
-                            <td class="sysco">$85.8B</td>
-                            <td class="usfoods">$37.9B</td>
-                            <td class="pfg">$58B</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Market Cap</strong></td>
-                            <td class="sysco">$36B</td>
-                            <td class="usfoods">$17.2B</td>
-                            <td class="pfg">~$15B est.</td>
-                        </tr>
-                        <tr>
-                            <td><strong>EBITDA</strong></td>
-                            <td class="sysco">$4.1B</td>
-                            <td class="usfoods">$1.4B</td>
-                            <td class="pfg">$1.5-1.7B</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Gross Margin</strong></td>
-                            <td class="sysco">19.5%</td>
-                            <td class="usfoods">~18%</td>
-                            <td class="pfg">Variable by segment</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Net Margin</strong></td>
-                            <td class="sysco">2.25%</td>
-                            <td class="usfoods">1.3%</td>
-                            <td class="pfg">2-3%</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th class="sysco">Sysco</th>
+                                <th class="usfoods">US Foods</th>
+                                <th class="pfg">PFG</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Annual Revenue</strong></td>
+                                <td class="sysco">$85.8B</td>
+                                <td class="usfoods">$37.9B</td>
+                                <td class="pfg">$58B</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Market Cap</strong></td>
+                                <td class="sysco">$36B</td>
+                                <td class="usfoods">$17.2B</td>
+                                <td class="pfg">~$15B est.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>EBITDA</strong></td>
+                                <td class="sysco">$4.1B</td>
+                                <td class="usfoods">$1.4B</td>
+                                <td class="pfg">$1.5-1.7B</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Gross Margin</strong></td>
+                                <td class="sysco">19.5%</td>
+                                <td class="usfoods">~18%</td>
+                                <td class="pfg">Variable by segment</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Net Margin</strong></td>
+                                <td class="sysco">2.25%</td>
+                                <td class="usfoods">1.3%</td>
+                                <td class="pfg">2-3%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="card">
                 <h3>🎯 Strategic Positioning</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px;">
+                <div class="grid-3-col">
                     <div>
                         <h4 style="color: var(--sysco); margin-bottom: 8px;">Sysco: The Scale Titan</h4>
                         <p style="font-size: 13px; line-height: 1.5;">Dominates via unmatched purchasing power, national account leverage, and SYGMA network for chains. 2.3x revenue of US Foods.</p>
@@ -623,158 +632,161 @@
             </div>
         </div>
 
-        <!-- TAB 2: FEATURE COMPARISON -->
         <div id="features" class="tab-content">
             <div class="card">
                 <h3>⚙️ Digital Capabilities & Tools</h3>
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 35%;">Feature</th>
-                            <th class="usfoods" style="width: 22%;">US Foods</th>
-                            <th class="sysco" style="width: 22%;">Sysco</th>
-                            <th class="pfg" style="width: 22%;">PFG</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Primary E-Commerce Platform</strong></td>
-                            <td class="usfoods"><strong>MOXē®</strong> (AI-powered)</td>
-                            <td class="sysco">Sysco.com (upgraded)</td>
-                            <td class="pfg">Performance Foodservice portal</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Mobile App Availability</strong></td>
-                            <td><span class="badge badge-success">Full</span></td>
-                            <td><span class="badge badge-neutral">Partial</span></td>
-                            <td><span class="badge badge-neutral">Basic</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>AI-Powered Product Search</strong></td>
-                            <td><span class="badge badge-success">Yes (MOXē)</span></td>
-                            <td><span class="badge badge-neutral">In Progress</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Image Ordering (AI)</strong></td>
-                            <td><span class="badge badge-success">Yes (Snap &amp; Order)</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Real-Time Delivery Tracking</strong></td>
-                            <td><span class="badge badge-success">30-min alerts</span></td>
-                            <td><span class="badge badge-success">Real-time</span></td>
-                            <td><span class="badge badge-neutral">Basic</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Menu Profitability Tools</strong></td>
-                            <td><span class="badge badge-success">Menu IQ (2/26 launch)</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Food Cost Calculator</strong></td>
-                            <td><span class="badge badge-success">Integrated, Free</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Inventory Management</strong></td>
-                            <td><span class="badge badge-success">Full integration</span></td>
-                            <td><span class="badge badge-neutral">Limited</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Pricing Agility (Real-Time)</strong></td>
-                            <td><span class="badge badge-success">Dynamic</span></td>
-                            <td><span class="badge badge-success">New (Q3 2025)</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Spanish Language Support</strong></td>
-                            <td><span class="badge badge-success">Full MOXē</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>API for 3rd-Party Integration</strong></td>
-                            <td><span class="badge badge-neutral">Limited</span></td>
-                            <td><span class="badge badge-success">Robust</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Predictive Analytics / Recommendations</strong></td>
-                            <td><span class="badge badge-success">AI-enabled</span></td>
-                            <td><span class="badge badge-neutral">In progress</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%;">Feature</th>
+                                <th class="usfoods" style="width: 22%;">US Foods</th>
+                                <th class="sysco" style="width: 22%;">Sysco</th>
+                                <th class="pfg" style="width: 22%;">PFG</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Primary E-Commerce Platform</strong></td>
+                                <td class="usfoods"><strong>MOXē®</strong> (AI-powered)</td>
+                                <td class="sysco">Sysco.com (upgraded)</td>
+                                <td class="pfg">Performance Foodservice portal</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mobile App Availability</strong></td>
+                                <td><span class="badge badge-success">Full</span></td>
+                                <td><span class="badge badge-neutral">Partial</span></td>
+                                <td><span class="badge badge-neutral">Basic</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>AI-Powered Product Search</strong></td>
+                                <td><span class="badge badge-success">Yes (MOXē)</span></td>
+                                <td><span class="badge badge-neutral">In Progress</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Image Ordering (AI)</strong></td>
+                                <td><span class="badge badge-success">Yes (Snap &amp; Order)</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Real-Time Delivery Tracking</strong></td>
+                                <td><span class="badge badge-success">30-min alerts</span></td>
+                                <td><span class="badge badge-success">Real-time</span></td>
+                                <td><span class="badge badge-neutral">Basic</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Menu Profitability Tools</strong></td>
+                                <td><span class="badge badge-success">Menu IQ (2/26 launch)</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Food Cost Calculator</strong></td>
+                                <td><span class="badge badge-success">Integrated, Free</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Inventory Management</strong></td>
+                                <td><span class="badge badge-success">Full integration</span></td>
+                                <td><span class="badge badge-neutral">Limited</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pricing Agility (Real-Time)</strong></td>
+                                <td><span class="badge badge-success">Dynamic</span></td>
+                                <td><span class="badge badge-success">New (Q3 2025)</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Spanish Language Support</strong></td>
+                                <td><span class="badge badge-success">Full MOXē</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>API for 3rd-Party Integration</strong></td>
+                                <td><span class="badge badge-neutral">Limited</span></td>
+                                <td><span class="badge badge-success">Robust</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Predictive Analytics / Recommendations</strong></td>
+                                <td><span class="badge badge-success">AI-enabled</span></td>
+                                <td><span class="badge badge-neutral">In progress</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="card">
                 <h3>📦 Product & Service Offerings</h3>
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 35%;">Offering Category</th>
-                            <th class="usfoods" style="width: 22%;">US Foods</th>
-                            <th class="sysco" style="width: 22%;">Sysco</th>
-                            <th class="pfg" style="width: 22%;">PFG</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Broadline Foodservice</strong></td>
-                            <td><span class="badge badge-success">Full</span></td>
-                            <td><span class="badge badge-success">Full</span></td>
-                            <td><span class="badge badge-success">Full (50% EBITDA)</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Fresh Produce & Protein</strong></td>
-                            <td><span class="badge badge-success">Premium tier</span></td>
-                            <td><span class="badge badge-success">Extensive</span></td>
-                            <td><span class="badge badge-success">Yes, exclusive fresh to c-stores</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Private Label / Branded</strong></td>
-                            <td><span class="badge badge-success">Emerging portfolio</span></td>
-                            <td><span class="badge badge-success">Extensive</span></td>
-                            <td><span class="badge badge-success">50% of independents mix</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Non-Food / Supplies</strong></td>
-                            <td><span class="badge badge-success">Yes</span></td>
-                            <td><span class="badge badge-success">Equipment division</span></td>
-                            <td><span class="badge badge-neutral">Limited</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Cash &amp; Carry Locations</strong></td>
-                            <td><span class="badge badge-neutral">~40 locations</span></td>
-                            <td><span class="badge badge-success">Expanding (To Go pilot)</span></td>
-                            <td><span class="badge badge-neutral">N/A</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Specialty / Niche Products</strong></td>
-                            <td><span class="badge badge-warning">Growing</span></td>
-                            <td><span class="badge badge-success">Robust</span></td>
-                            <td><span class="badge badge-success">Vistar dominates (candy, snacks)</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Convenience Store Distribution</strong></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                            <td><span class="badge badge-danger">No</span></td>
-                            <td><span class="badge badge-success">42% revenue (Core-Mark, Eby-Brown)</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Multi-Channel Integration</strong></td>
-                            <td><span class="badge badge-neutral">Restaurant-focused</span></td>
-                            <td><span class="badge badge-neutral">Omnichannel emerging</span></td>
-                            <td><span class="badge badge-success">True multi-channel</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 35%;">Offering Category</th>
+                                <th class="usfoods" style="width: 22%;">US Foods</th>
+                                <th class="sysco" style="width: 22%;">Sysco</th>
+                                <th class="pfg" style="width: 22%;">PFG</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Broadline Foodservice</strong></td>
+                                <td><span class="badge badge-success">Full</span></td>
+                                <td><span class="badge badge-success">Full</span></td>
+                                <td><span class="badge badge-success">Full (50% EBITDA)</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fresh Produce & Protein</strong></td>
+                                <td><span class="badge badge-success">Premium tier</span></td>
+                                <td><span class="badge badge-success">Extensive</span></td>
+                                <td><span class="badge badge-success">Yes, exclusive fresh to c-stores</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Private Label / Branded</strong></td>
+                                <td><span class="badge badge-success">Emerging portfolio</span></td>
+                                <td><span class="badge badge-success">Extensive</span></td>
+                                <td><span class="badge badge-success">50% of independents mix</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Non-Food / Supplies</strong></td>
+                                <td><span class="badge badge-success">Yes</span></td>
+                                <td><span class="badge badge-success">Equipment division</span></td>
+                                <td><span class="badge badge-neutral">Limited</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cash &amp; Carry Locations</strong></td>
+                                <td><span class="badge badge-neutral">~40 locations</span></td>
+                                <td><span class="badge badge-success">Expanding (To Go pilot)</span></td>
+                                <td><span class="badge badge-neutral">N/A</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Specialty / Niche Products</strong></td>
+                                <td><span class="badge badge-warning">Growing</span></td>
+                                <td><span class="badge badge-success">Robust</span></td>
+                                <td><span class="badge badge-success">Vistar dominates (candy, snacks)</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Convenience Store Distribution</strong></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                                <td><span class="badge badge-danger">No</span></td>
+                                <td><span class="badge badge-success">42% revenue (Core-Mark, Eby-Brown)</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Multi-Channel Integration</strong></td>
+                                <td><span class="badge badge-neutral">Restaurant-focused</span></td>
+                                <td><span class="badge badge-neutral">Omnichannel emerging</span></td>
+                                <td><span class="badge badge-success">True multi-channel</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="insight-box">
@@ -793,7 +805,6 @@
             </div>
         </div>
 
-        <!-- TAB 3: SENTIMENT -->
         <div id="sentiment" class="tab-content">
             <div class="grid">
                 <div class="card">
@@ -823,38 +834,40 @@
 
                 <div class="card">
                     <h3>Sentiment by Channel</h3>
-                    <table class="comparison-table" style="font-size: 12px;">
-                        <tr>
-                            <th>Platform</th>
-                            <th>US Foods</th>
-                            <th>Sysco</th>
-                            <th>PFG</th>
-                        </tr>
-                        <tr>
-                            <td>Reddit (r/RestaurantOwners)</td>
-                            <td><span class="badge badge-success">Positive</span></td>
-                            <td><span class="badge badge-danger">Negative</span></td>
-                            <td><span class="badge badge-neutral">Mixed</span></td>
-                        </tr>
-                        <tr>
-                            <td>Google Reviews</td>
-                            <td><span class="badge badge-success">3.7/5</span></td>
-                            <td><span class="badge badge-warning">3.2/5</span></td>
-                            <td><span class="badge badge-success">3.5/5</span></td>
-                        </tr>
-                        <tr>
-                            <td>Trade Media (FSD, FRM)</td>
-                            <td><span class="badge badge-success">High praise</span></td>
-                            <td><span class="badge badge-warning">Mixed</span></td>
-                            <td><span class="badge badge-neutral">Neutral</span></td>
-                        </tr>
-                        <tr>
-                            <td>YouTube / Viral</td>
-                            <td><span class="badge badge-success">Emerging hero</span></td>
-                            <td><span class="badge badge-danger">Viral criticism</span></td>
-                            <td><span class="badge badge-neutral">Not featured</span></td>
-                        </tr>
-                    </table>
+                    <div class="table-container">
+                        <table class="comparison-table" style="font-size: 12px;">
+                            <tr>
+                                <th>Platform</th>
+                                <th>US Foods</th>
+                                <th>Sysco</th>
+                                <th>PFG</th>
+                            </tr>
+                            <tr>
+                                <td>Reddit (r/RestaurantOwners)</td>
+                                <td><span class="badge badge-success">Positive</span></td>
+                                <td><span class="badge badge-danger">Negative</span></td>
+                                <td><span class="badge badge-neutral">Mixed</span></td>
+                            </tr>
+                            <tr>
+                                <td>Google Reviews</td>
+                                <td><span class="badge badge-success">3.7/5</span></td>
+                                <td><span class="badge badge-warning">3.2/5</span></td>
+                                <td><span class="badge badge-success">3.5/5</span></td>
+                            </tr>
+                            <tr>
+                                <td>Trade Media (FSD, FRM)</td>
+                                <td><span class="badge badge-success">High praise</span></td>
+                                <td><span class="badge badge-warning">Mixed</span></td>
+                                <td><span class="badge badge-neutral">Neutral</span></td>
+                            </tr>
+                            <tr>
+                                <td>YouTube / Viral</td>
+                                <td><span class="badge badge-success">Emerging hero</span></td>
+                                <td><span class="badge badge-danger">Viral criticism</span></td>
+                                <td><span class="badge badge-neutral">Not featured</span></td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -911,51 +924,52 @@
             </div>
         </div>
 
-        <!-- TAB 4: MARKET PRESENCE -->
         <div id="market" class="tab-content">
             <div class="card">
                 <h3>🌐 Share of Voice: Search, News, Social (2026)</h3>
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Channel</th>
-                            <th class="sysco">Sysco</th>
-                            <th class="usfoods">US Foods</th>
-                            <th class="pfg">PFG</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Google Search Volume (foodservice distributor queries)</strong></td>
-                            <td class="sysco">38%</td>
-                            <td class="usfoods">28%</td>
-                            <td class="pfg">14%</td>
-                        </tr>
-                        <tr>
-                            <td><strong>News Mentions (FY 2025)</strong></td>
-                            <td class="sysco">42% of industry news</td>
-                            <td class="usfoods">31%</td>
-                            <td class="pfg">18%</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Reddit Posts (/restaurantowners)</strong></td>
-                            <td class="sysco">35% negative bias</td>
-                            <td class="usfoods">52% positive bias</td>
-                            <td class="pfg">8% mentions</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Social Media Engagement (Twitter, LinkedIn)</strong></td>
-                            <td class="sysco">1.2M followers (LinkedIn)</td>
-                            <td class="usfoods">890K followers (LinkedIn)</td>
-                            <td class="pfg">540K followers</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Channel</th>
+                                <th class="sysco">Sysco</th>
+                                <th class="usfoods">US Foods</th>
+                                <th class="pfg">PFG</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Google Search Volume (foodservice distributor queries)</strong></td>
+                                <td class="sysco">38%</td>
+                                <td class="usfoods">28%</td>
+                                <td class="pfg">14%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>News Mentions (FY 2025)</strong></td>
+                                <td class="sysco">42% of industry news</td>
+                                <td class="usfoods">31%</td>
+                                <td class="pfg">18%</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Reddit Posts (/restaurantowners)</strong></td>
+                                <td class="sysco">35% negative bias</td>
+                                <td class="usfoods">52% positive bias</td>
+                                <td class="pfg">8% mentions</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Social Media Engagement (Twitter, LinkedIn)</strong></td>
+                                <td class="sysco">1.2M followers (LinkedIn)</td>
+                                <td class="usfoods">890K followers (LinkedIn)</td>
+                                <td class="pfg">540K followers</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="card">
                 <h3>🗣️ Topics Each Brand Dominates</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 16px;">
+                <div class="grid-3-col">
                     <div>
                         <h4 style="color: var(--sysco); margin-bottom: 12px;">Sysco Topic Dominance</h4>
                         <ul class="feature-list">
@@ -991,52 +1005,53 @@
 
             <div class="card">
                 <h3>📍 Geographic Presence & Density</h3>
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Region</th>
-                            <th class="sysco">Sysco Strength</th>
-                            <th class="usfoods">US Foods Strength</th>
-                            <th class="pfg">PFG Strength</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Northeast</strong></td>
-                            <td class="sysco">Strong (legacy)</td>
-                            <td class="usfoods">Very Strong (HQ + dense)</td>
-                            <td class="pfg">Moderate</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Southeast</strong></td>
-                            <td class="sysco">Dominant</td>
-                            <td class="usfoods">Growing</td>
-                            <td class="pfg">Very Strong (Core-Mark expansion)</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Midwest</strong></td>
-                            <td class="sysco">Strong</td>
-                            <td class="usfoods">Competitive</td>
-                            <td class="pfg">Moderate</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Southwest</strong></td>
-                            <td class="sysco">Strong</td>
-                            <td class="usfoods">Moderate</td>
-                            <td class="pfg">Growing</td>
-                        </tr>
-                        <tr>
-                            <td><strong>West Coast</strong></td>
-                            <td class="sysco">Established</td>
-                            <td class="usfoods">Moderate (Expanding)</td>
-                            <td class="pfg">Growing via Core-Mark</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Region</th>
+                                <th class="sysco">Sysco Strength</th>
+                                <th class="usfoods">US Foods Strength</th>
+                                <th class="pfg">PFG Strength</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Northeast</strong></td>
+                                <td class="sysco">Strong (legacy)</td>
+                                <td class="usfoods">Very Strong (HQ + dense)</td>
+                                <td class="pfg">Moderate</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Southeast</strong></td>
+                                <td class="sysco">Dominant</td>
+                                <td class="usfoods">Growing</td>
+                                <td class="pfg">Very Strong (Core-Mark expansion)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Midwest</strong></td>
+                                <td class="sysco">Strong</td>
+                                <td class="usfoods">Competitive</td>
+                                <td class="pfg">Moderate</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Southwest</strong></td>
+                                <td class="sysco">Strong</td>
+                                <td class="usfoods">Moderate</td>
+                                <td class="pfg">Growing</td>
+                            </tr>
+                            <tr>
+                                <td><strong>West Coast</strong></td>
+                                <td class="sysco">Established</td>
+                                <td class="usfoods">Moderate (Expanding)</td>
+                                <td class="pfg">Growing via Core-Mark</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- TAB 5: PAIN POINTS -->
         <div id="painpoints" class="tab-content">
             <div class="card">
                 <h3>⚠️ Operator Pain Points Voiced in 2025-2026</h3>
@@ -1105,7 +1120,6 @@
             </div>
         </div>
 
-        <!-- TAB 6: OPPORTUNITIES -->
         <div id="opportunities" class="tab-content">
             <div class="card">
                 <h3>🚀 Strategic Opportunities for US Foods</h3>
@@ -1176,61 +1190,62 @@
 
             <div class="card">
                 <h3>📊 90-Day Quick Wins (Immediate Implementation)</h3>
-
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Initiative</th>
-                            <th>Effort</th>
-                            <th>Impact</th>
-                            <th>Owner</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Menu IQ Launch Blitz</strong></td>
-                            <td><span class="badge badge-warning">Medium</span></td>
-                            <td><span class="badge badge-success">High</span></td>
-                            <td>Product + Marketing</td>
-                        </tr>
-                        <tr>
-                            <td><strong>20 Operator Case Studies</strong></td>
-                            <td><span class="badge badge-warning">Medium</span></td>
-                            <td><span class="badge badge-success">High</span></td>
-                            <td>Content + Sales</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Reddit Engagement Program</strong></td>
-                            <td><span class="badge badge-success">Low</span></td>
-                            <td><span class="badge badge-warning">Medium</span></td>
-                            <td>Social/Comms</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Independent Restaurant Coalition</strong></td>
-                            <td><span class="badge badge-danger">High</span></td>
-                            <td><span class="badge badge-success">High</span></td>
-                            <td>Partnerships + Marketing</td>
-                        </tr>
-                        <tr>
-                            <td><strong>West Coast Hub Announcements</strong></td>
-                            <td><span class="badge badge-success">Low</span></td>
-                            <td><span class="badge badge-success">High</span></td>
-                            <td>Exec Comms</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Fast-Casual Chain RFP Blitz</strong></td>
-                            <td><span class="badge badge-warning">Medium</span></td>
-                            <td><span class="badge badge-success">High</span></td>
-                            <td>Sales + Account Exec</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-container">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Initiative</th>
+                                <th>Effort</th>
+                                <th>Impact</th>
+                                <th>Owner</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Menu IQ Launch Blitz</strong></td>
+                                <td><span class="badge badge-warning">Medium</span></td>
+                                <td><span class="badge badge-success">High</span></td>
+                                <td>Product + Marketing</td>
+                            </tr>
+                            <tr>
+                                <td><strong>20 Operator Case Studies</strong></td>
+                                <td><span class="badge badge-warning">Medium</span></td>
+                                <td><span class="badge badge-success">High</span></td>
+                                <td>Content + Sales</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Reddit Engagement Program</strong></td>
+                                <td><span class="badge badge-success">Low</span></td>
+                                <td><span class="badge badge-warning">Medium</span></td>
+                                <td>Social/Comms</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Independent Restaurant Coalition</strong></td>
+                                <td><span class="badge badge-danger">High</span></td>
+                                <td><span class="badge badge-success">High</span></td>
+                                <td>Partnerships + Marketing</td>
+                            </tr>
+                            <tr>
+                                <td><strong>West Coast Hub Announcements</strong></td>
+                                <td><span class="badge badge-success">Low</span></td>
+                                <td><span class="badge badge-success">High</span></td>
+                                <td>Exec Comms</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fast-Casual Chain RFP Blitz</strong></td>
+                                <td><span class="badge badge-warning">Medium</span></td>
+                                <td><span class="badge badge-success">High</span></td>
+                                <td>Sales + Account Exec</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div class="card">
                 <h3>💰 Investment Priorities (2026 Budget Allocation)</h3>
 
-                <div style="display: grid; grid-template-columns: 1fr; gap: 16px; margin: 20px 0;">
+                <div class="grid-3-col">
                     <div style="background: var(--bg-subtle); padding: 16px; border-radius: 8px; border-left: 4px solid var(--primary-green);">
                         <h4 style="color: var(--primary-green); margin-bottom: 8px;">🎯 Tier 1: Must-Fund (Year-1 ROI)</h4>
                         <p style="font-size: 13px; margin-bottom: 12px;"><strong>Menu IQ & MOXē Feature Acceleration</strong> — $15-20M | Launches brand differentiation immediately.</p>
@@ -1270,7 +1285,12 @@
             buttons.forEach(btn => btn.classList.remove('active'));
             
             document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+            
+            // Find the specific button that was clicked or matches the tabName
+            const targetBtn = Array.from(buttons).find(btn => btn.getAttribute('onclick').includes(tabName));
+            if(targetBtn) {
+                targetBtn.classList.add('active');
+            }
         }
 
         console.log('US Foods Competitive Intelligence Dashboard loaded - Jan 28, 2026 - Official Brand Colors');
