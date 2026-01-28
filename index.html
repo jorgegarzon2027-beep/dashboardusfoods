@@ -148,10 +148,11 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Grid Layouts */
+ /* Grid Layouts */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            /* FIX 1: Reduced to 280px so it fits on narrower mobile screens */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -172,6 +173,10 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
             height: 100%;
+            
+            /* FIX 2: THIS IS CRITICAL. It allows the card to shrink below 
+               the width of the table, activating the scrollbar. */
+            min-width: 0; 
         }
 
         .card:hover {
